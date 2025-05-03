@@ -3,58 +3,22 @@ AutoCAD Module
 
 |GitHub|    |Instagram|    |LinkedIn|
 
-.. raw:: html
+   .. raw:: html
 
-   <table>
-
-.. raw:: html
-
-   <tr>
-
-.. raw:: html
-
-   <td>
-
-.. raw:: html
-
-   <p style="text-align: center;">
-
-Scan to Pay
-
-.. raw:: html
-
-   </p>
-
-.. raw:: html
-
-   </td>
-
-.. raw:: html
-
-   <td style="padding-left: 20px; vertical-align: middle;">
-
-.. raw:: html
-
-   <p>
-
-If you like this project and want to support me, consider making a
-donation.
-
-.. raw:: html
-
-   </p>
-
-.. raw:: html
-
-   </td>
-
-.. raw:: html
-
-   </tr>
-
-.. raw:: html
-
-   </table>
+    <table>
+        <tr>
+            <td>
+            <img src="https://i.postimg.cc/8C07zdcr/upi-1.png" alt="UPI QR Code" width="120"/>
+            <p style="text-align: center;"><b>Scan to Pay</b></p>
+            </td>
+            <td style="padding-left: 20px; vertical-align: middle;">
+            <a href="https://www.paypal.me/jonespeter22">
+                <img src="https://img.shields.io/badge/jonespeter22-PayPal-blue?logo=paypal&logoColor=white" alt="Donate with PayPal"/>
+            </a><br><br>
+            <p>If you like this project and want to support me, consider making a donation.</p>
+            </td>
+        </tr>
+    </table>
 
 Overview
 --------
