@@ -1,17 +1,18 @@
-# setup.py
 from setuptools import setup, find_packages
+import sys
+
+requirements = ['psutil']
+if sys.platform == 'win32':
+    requirements.append('pywin32')
 
 setup(
-    name="AutoCAD",  # Name of your package
+    name="AutoCAD",
     version="0.1.3",
-    packages=find_packages(),  # Automatically finds the 'cadvance' package
-    install_requires=[
-        'pywin32',
-        'psutil',
-    ],
+    packages=find_packages(),
+    install_requires=requirements,
     entry_points={
         'console_scripts': [
-            'AutoCAD = AutoCAD.__main__:main',  # Registers 'cadvance' as a command-line tool
+            'AutoCAD = AutoCAD.__main__:main',
         ],
     },
     keywords=["autocad", "automation", "activex", "comtypes", "AutoCAD", "AutoCADlib"],
@@ -29,5 +30,5 @@ setup(
         "Intended Audience :: System Administrators",
         "Operating System :: Microsoft :: Windows",
     ],
-    include_package_data=True,  # Include non-Python files, like the README
+    include_package_data=True,
 )
