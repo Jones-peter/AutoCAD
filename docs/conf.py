@@ -12,4 +12,5 @@ extensions = [
     'sphinx.ext.viewcode',
 ]
 
+autodoc_mock_imports = ["pywin32"]
 html_theme = 'furo'  # or sphinx_rtd_theme
