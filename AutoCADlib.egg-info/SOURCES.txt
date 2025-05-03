@@ -1,0 +1,13 @@
+LICENSE
+README.md
+setup.py
+AutoCADlib/AutoCAD_Module.py
+AutoCADlib/__init__.py
+AutoCADlib/__main__.py
+AutoCADlib.egg-info/PKG-INFO
+AutoCADlib.egg-info/SOURCES.txt
+AutoCADlib.egg-info/dependency_links.txt
+AutoCADlib.egg-info/entry_points.txt
+AutoCADlib.egg-info/requires.txt
+AutoCADlib.egg-info/top_level.txt
+tests/test.py
