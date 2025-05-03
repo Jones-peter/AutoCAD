@@ -10,13 +10,10 @@ env/
 venv/
 
 # Distribution / packaging
-# build/
-# dist/
-# *.egg-info/
-
+build/
+dist/
+*.egg-info/
 # IDE / editor folders
 .vscode/
 .idea/
 *.swp
-
-setup.py
