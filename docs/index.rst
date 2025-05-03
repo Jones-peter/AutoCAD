@@ -1,156 +1,146 @@
-.. AutoCAD Module documentation master file
 
-AutoCAD Python Module
-=====================
+.. AutoCAD Module Documentation
 
-.. image:: https://img.shields.io/github/stars/YOUR_GITHUB_HANDLE/AutoCAD
-   :target: https://github.com/YOUR_GITHUB_HANDLE/AutoCAD
-.. image:: https://img.shields.io/github/followers/YOUR_GITHUB_HANDLE?label=Follow&style=social
-   :target: https://github.com/YOUR_GITHUB_HANDLE
+Welcome to the AutoCAD Module documentation. This module provides a comprehensive interface for automating tasks within AutoCAD through Python, leveraging the COM client for seamless interaction.
 
-GitHub | Instagram | LinkedIn
-------------------------------
-
-.. image:: upi_qr_code.png
-   :width: 200px
+.. image:: https://i.postimg.cc/8C07zdcr/upi-1.png
+   :alt: UPI QR Code
    :align: center
+   :width: 120px
 
-**Donate with PayPal or UPI**
+.. table:: Support
 
-If you like this project and want to support me, consider making a donation.
+   ================================  =======================================================
+   **GitHub**                      | `Jones-peter <https://github.com/Jones-peter>`_
+   **Instagram**                    | `@jones_peter__ <https://www.instagram.com/jones_peter__/`
+   **LinkedIn**                     | `Jones-Peter <https://www.linkedin.com/in/jones-peter-121157221/>`
+   ================================  =======================================================
+   
+   .. raw:: html
+
+      <table>
+        <tr>
+          <td style="padding-left: 20px; vertical-align: middle;">
+            <a href="https://www.paypal.me/jonespeter22">
+              <img src="https://img.shields.io/badge/jonespeter22-PayPal-blue?logo=paypal&logoColor=white" alt="Donate with PayPal"/>
+            </a><br><br>
+            <p>If you like this project and want to support me, consider making a donation.</p>
+          </td>
+        </tr>
+      </table>
+
+Contents:
+
+- **Overview**
+- **Features**
+- **Installation**
+- **Usage**
+  - Initialization
+  - Object Creation
+  - Layer Management
+  - Block Operations
+  - Group Management
+  - User Interaction
+  - Document Management
+  - Object Manipulation
+  - Error Handling
+- **Contributing**
+- **License**
+- **Credits**
+- **Contact**
 
 Overview
---------
+========
 
-The AutoCAD module provides a comprehensive interface for interacting with AutoCAD through Python. It leverages the COM client to automate tasks within AutoCAD, allowing for efficient manipulation of drawings and objects.
+The `AutoCAD` module provides an interface to automate tasks within AutoCAD, allowing users to create and manipulate AutoCAD objects through Python. 
 
 Features
---------
+========
 
-- Object Creation: Circles, lines, rectangles, ellipses, text, dimensions, points, polylines, splines, arcs, etc.
-- Layer Management: Create, delete, lock/unlock, and modify layers.
-- Block Operations: Insert, export, and modify blocks and their attributes.
-- Group Management: Manage object groups with ease.
-- User Interaction: Input points, strings, and integers from users.
-- Error Handling: Custom exception handling for AutoCAD-related errors.
+- **Object Creation**: Create circles, lines, rectangles, ellipses, text objects, dimensions, points, polylines, splines, arcs, and more.
+- **Layer Management**: Create, delete, lock/unlock, and modify layers.
+- **Block Operations**: Insert, export, and modify blocks and their attributes.
+- **Group Management**: Manage groups of objects.
+- **User Interaction**: Request point, string, and integer inputs from the user.
+- **Error Handling**: Custom exception handling for AutoCAD-related errors.
 
 Installation
-------------
+============
 
-Install via pip:
+To install the `AutoCAD` module, ensure you have Python installed along with the necessary packages:
 
-.. code-block:: bash
-
-   pip install AutoCAD
+```bash
+pip install AutoCAD
+```
 
 Usage
------
+======
 
-**Initialization**
+### Initialization
 
-.. code-block:: python
+To start using the module, initialize the `AutoCAD` class:
 
-   from AutoCAD import AutoCAD
-   cad = AutoCAD()
+```python
+from AutoCAD import AutoCAD
 
-**Object Creation Examples**
+cad = AutoCAD()
+```
 
-.. code-block:: python
+### Object Creation
 
-   center = APoint(10, 10, 0)
-   circle = cad.add_circle(center, 5)
+- **add_circle(center, radius)**: Adds a circle to the model space.
 
-   line = cad.add_line(APoint(0, 0, 0), APoint(10, 0, 0))
+```python
+center = APoint(10, 10, 0)
+radius = 5
+circle = cad.add_circle(center, radius)
+```
 
-   rectangle = cad.add_rectangle(APoint(0, 0, 0), APoint(10, 5, 0))
+- **add_line(start_point, end_point)**: Adds a line to the model space.
 
-   ellipse = cad.add_ellipse(APoint(5, 5, 0), APoint(10, 0, 0), 0.5)
+```python
+start_point = APoint(0, 0, 0)
+end_point = APoint(10, 0, 0)
+line = cad.add_line(start_point, end_point)
+```
 
-   text = Text("Hello, AutoCAD!", APoint(5, 5, 0), 2.5)
-   cad.add_text(text)
+Refer to the full documentation for all object creation methods like `add_rectangle()`, `add_ellipse()`, `add_text()`, etc.
 
-   dimension = Dimension(APoint(0, 0, 0), APoint(10, 0, 0), APoint(5, -2, 0), DimensionType.ALIGNED)
-   cad.add_dimension(dimension)
+### Layer Management
 
-   polyline = cad.add_polyline([APoint(0, 0, 0), APoint(5, 5, 0), APoint(10, 0, 0)])
+The module allows you to manage layers with functions like `create_layer()`, `delete_layer()`, and `set_layer_visibility()`. You can create layers, set visibility, change color, and more.
 
-   arc = cad.add_arc(APoint(5, 5, 0), 5, 0, 180)
+### Block Operations
 
-**Layer Management**
+You can insert, export, and modify AutoCAD blocks with functions like `insert_block()`, `export_block_to_file()`, and `modify_block_attribute()`.
 
-.. code-block:: python
+### User Interaction
 
-   layer = Layer("MyLayer", Color.RED)
-   cad.create_layer(layer)
-   cad.set_active_layer("MyLayer")
-   cad.set_layer_visibility("MyLayer", visible=False)
-   cad.lock_layer("MyLayer", True)
-   cad.change_layer_color("MyLayer", Color.BLUE)
-   cad.set_layer_linetype("MyLayer", "Dashed")
+Request inputs from users for points, strings, and integers with methods like `get_user_input_point()`, `get_user_input_string()`, and `get_user_input_integer()`.
 
-**Block Operations**
+### Document Management
 
-.. code-block:: python
-
-   block = BlockReference("BlockName", APoint(5, 5, 0))
-   cad.insert_block(block)
-
-   cad.modify_block_attribute(block, "TagName", "NewValue")
-
-   cad.export_block_to_file("BlockName", "path/to/export.dwg")
-
-**Group Management**
-
-.. code-block:: python
-
-   group = cad.create_group("MyGroup", [circle, line])
-   cad.add_to_group("MyGroup", [rectangle])
-
-**User Interaction**
-
-.. code-block:: python
-
-   user_point = cad.get_user_input_point("Pick a point")
-   cad.show_message("Operation completed!")
-
-**Document Management**
-
-.. code-block:: python
-
-   cad.save_as("drawing.dwg")
-   cad.open_file("drawing.dwg")
-   cad.close(save_changes=True)
-
-**Object Manipulation**
-
-.. code-block:: python
-
-   cad.move_object(circle, APoint(20, 20, 0))
-   cad.rotate_object(circle, APoint(5, 5, 0), 90)
-
-Error Handling
---------------
-
-All methods raise `CADException` on errors with helpful messages.
+Functions such as `save_as()`, `open_file()`, and `close()` help manage AutoCAD documents.
 
 Contributing
-------------
+============
 
-Contributions are welcome! Fork the repo and submit a pull request.
+Contributions are welcome! Please fork the repository and submit a pull request with your improvements.
 
 License
--------
+=======
 
-This project is licensed under the **MIT License**.
-
-Contact
--------
-
-For support or inquiries, email: **jonespetersoftware@gmail.com**
+This project is licensed under the MIT License.
 
 Credits
--------
+=======
 
-- Based on ideas from `manufino/AutoCAD`
-- Uses principles from `reclosedev/pyautocad`
+This project is inspired by and builds upon the work from the following repositories:
 
+- [AutoCAD by manufino](https://github.com/manufino/AutoCAD)
+- [pyautocad by reclosedev](https://github.com/reclosedev/pyautocad)
+
+Contact
+=======
+
+For any questions or support, please contact [jonespetersoftware@gmail.com](mailto:jonespetersoftware@gmail.com).
