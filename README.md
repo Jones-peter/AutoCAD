@@ -1,4 +1,4 @@
-# AutoCADlib Module
+# AutoCAD Module
 
 [![GitHub](https://img.shields.io/badge/GitHub-Jones--peter-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Jones-peter) &nbsp;&nbsp; [![Instagram](https://img.shields.io/badge/Instagram-jones__peter__-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/jones_peter__/) &nbsp;&nbsp; [![LinkedIn](https://img.shields.io/badge/LinkedIn-Jones--Peter-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/jones-peter-121157221/)
 
@@ -20,7 +20,7 @@
 
 ## Overview
 
-The `AutoCADlib` module provides a comprehensive interface for interacting with AutoCAD through Python. It leverages the COM client to automate tasks within AutoCAD, allowing for efficient manipulation of drawings and objects.
+The `AutoCAD` module provides a comprehensive interface for interacting with AutoCAD through Python. It leverages the COM client to automate tasks within AutoCAD, allowing for efficient manipulation of drawings and objects.
 
 ## Features
 
@@ -36,7 +36,7 @@ The `AutoCADlib` module provides a comprehensive interface for interacting with 
 Ensure you have Python installed along with the necessary packages:
 
 ```bash
-pip install AutoCADlib
+pip install AutoCAD
 ```
 
 ## Usage
@@ -46,7 +46,7 @@ pip install AutoCADlib
 To start using the module, initialize the `AutoCAD` class:
 
 ```python
-from AutoCADlib import AutoCAD
+from AutoCAD import AutoCAD
 
 cad = AutoCAD()
 ```
