@@ -498,9 +498,29 @@ class AutoCAD:
     # Move an object
     def move_object(self, obj, new_insertion_point):
         try:
-            obj.Move(obj.InsertionPoint, new_insertion_point.to_variant())
+            # Ensure the object is movable
+            if not hasattr(obj, "Move"):
+                raise CADException("The object does not support Move().")
+
+            # Get a base point: try InsertionPoint first, fallback to MinPoint
+            try:
+                from_point = win32com.client.VARIANT(
+                    pythoncom.VT_ARRAY | pythoncom.VT_R8, list(obj.InsertionPoint)
+                )
+            except AttributeError:
+                # Fallback for objects without InsertionPoint
+                from_point = win32com.client.VARIANT(
+                    pythoncom.VT_ARRAY | pythoncom.VT_R8, list(obj.GeometricExtents.MinPoint)
+                )
+
+            # Convert new target point to VARIANT
+            to_point = new_insertion_point.to_variant()
+
+            # Try moving the object
+            obj.Move(from_point, to_point)
+
         except Exception as e:
-            raise CADException(f"Error moving object: {e}")
+            raise CADException(f"Error moving object (type: {obj.EntityName}): {e}")
 
     # Scale an object
     def scale_object(self, obj, base_point, scale_factor):
