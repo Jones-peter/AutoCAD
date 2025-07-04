@@ -1,15 +1,14 @@
 import subprocess
 import time
-
 import psutil
 import pythoncom
 import win32com.client
 from enum import Enum
 
-# project by jones peter
 
-# Enum to represent common colors in AutoCAD
+# project by jones peter
 class Color(Enum):
+    """Enum to represent common colors in AutoCAD."""
     RED = 1
     YELLOW = 2
     GREEN = 3
@@ -24,21 +23,30 @@ class Color(Enum):
 
     @staticmethod
     def from_name(name):
+        """
+        Gets the color value from its string name.
+        Args:
+            name (str): The name of the color (e.g., 'RED').
+        Returns:
+            int: The integer value of the color.
+        Raises:
+            ValueError: If the color name is not valid.
+        """
         try:
             return Color[name.upper()].value
         except KeyError:
             raise ValueError(f"Color '{name}' is not a valid color name")
 
 
-# Enum to represent alignments in AutoCAD
 class Alignment(Enum):
+    """Enum to represent text alignments in AutoCAD."""
     LEFT = 'left'
     CENTER = 'center'
     RIGHT = 'right'
 
 
-# Enum to represent dimension types in AutoCAD
 class DimensionType(Enum):
+    """Enum to represent dimension types in AutoCAD."""
     ALIGNED = 'aligned'
     LINEAR = 'linear'
     ANGULAR = 'angular'
@@ -46,8 +54,8 @@ class DimensionType(Enum):
     DIAMETER = 'diameter'
 
 
-# Enum to represent line styles in AutoCAD
 class LineStyle(Enum):
+    """Enum to represent common line styles in AutoCAD."""
     CONTINUOUS = 'Continuous'  # ------------
     DASHED = 'Dashed'  # - - - - - -
     DOTTED = 'Dotted'  # . . . . . .
@@ -63,26 +71,50 @@ class LineStyle(Enum):
     DASHDOT = 'Dashdot'  # - . - . -
 
 
-# Class to represent a 3D point
 class APoint:
+    """Represents a 3D point in AutoCAD."""
     def __init__(self, x=0, y=0, z=0):
+        """
+        Initializes a 3D point.
+        Args:
+            x (float): The x-coordinate.
+            y (float): The y-coordinate.
+            z (float): The z-coordinate.
+        """
         self.x = x
         self.y = y
         self.z = z
 
     def to_variant(self):
+        """
+        Converts the point to a COM VARIANT object for AutoCAD.
+        Returns:
+            win32com.client.VARIANT: The point as a variant array.
+        """
         return win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8, [self.x, self.y, self.z])
 
     def to_tuple(self):
+        """
+        Converts the point to a 2D tuple (x, y).
+        Returns:
+            tuple: A tuple containing the x and y coordinates.
+        """
         return (self.x, self.y)
 
     def __repr__(self):
         return f"APoint({self.x}, {self.y}, {self.z})"
 
 
-# Class to represent a layer
 class Layer:
+    """Represents an AutoCAD layer."""
     def __init__(self, name, color=Color.WHITE, visible=True):
+        """
+        Initializes a layer.
+        Args:
+            name (str): The name of the layer.
+            color (Color): The color of the layer.
+            visible (bool): The visibility state of the layer.
+        """
         self.name = name
         self.color = color
         self.visible = visible
@@ -91,9 +123,18 @@ class Layer:
         return f"Layer(name='{self.name}', color={self.color}, visible={self.visible})"
 
 
-# Class to represent a block reference
 class BlockReference:
+    """Represents an AutoCAD block reference (insertion)."""
     def __init__(self, name, insertion_point, scale=1.0, rotation=0.0):
+        """
+        Initializes a block reference.
+
+        Args:
+            name (str): The name of the block definition.
+            insertion_point (APoint): The point where the block is inserted.
+            scale (float): The scale factor for the block.
+            rotation (float): The rotation angle in radians.
+        """
         self.name = name
         self.insertion_point = insertion_point
         self.scale = scale
@@ -103,9 +144,48 @@ class BlockReference:
         return f"BlockReference(name='{self.name}', insertion_point={self.insertion_point}, scale={self.scale}, rotation={self.rotation})"
 
 
-# Class to represent a text object
+class Table:
+    """Represents a full-featured AutoCAD table."""
+    def __init__(self, insertion_point: APoint, data: list[list[str]], headers: list[str] = None, title: str = None,
+                 col_widths: list[float] = None, row_height: float = 8.0, text_height: float = 2.5,
+                 alignment: Alignment = Alignment.CENTER):
+        """
+        Initializes a table data object.
+        Args:
+            insertion_point (APoint): The top-left insertion point for the table.
+            data (list[list[str]]): A list of lists representing the table's body data.
+            headers (list[str], optional): A list of strings for the header row. Defaults to None.
+            title (str, optional): A title for the table. Defaults to None.
+            col_widths (list[float], optional): A list of widths for each column. If None, widths are automatic.
+            row_height (float): The height for each row.
+            text_height (float): The default text height for cells.
+            alignment (Alignment): The alignment for cell content. Defaults to Alignment.CENTER.
+        """
+        self.insertion_point = insertion_point
+        self.data = data
+        self.headers = headers
+        self.title = title
+        self.col_widths = col_widths
+        self.row_height = row_height
+        self.text_height = text_height
+        self.alignment = alignment
+
+    def __repr__(self):
+        return f"Table(title='{self.title}', rows={len(self.data)}, cols={len(self.data[0]) if self.data else 0})"
+
+
 class Text:
+    """Represents a text object in AutoCAD."""
     def __init__(self, content, insertion_point, height, alignment=Alignment.LEFT):
+        """
+        Initializes a text object.
+
+        Args:
+            content (str): The text string to display.
+            insertion_point (APoint): The insertion point for the text.
+            height (float): The height of the text.
+            alignment (Alignment): The alignment of the text.
+        """
         self.content = content
         self.insertion_point = insertion_point
         self.height = height
@@ -115,9 +195,18 @@ class Text:
         return f"Text(content='{self.content}', insertion_point={self.insertion_point}, height={self.height}, alignment='{self.alignment}')"
 
 
-# Class to represent a dimension
 class Dimension:
+    """Represents a dimension object in AutoCAD."""
     def __init__(self, start_point, end_point, text_point, dimension_type=DimensionType.ALIGNED):
+        """
+        Initializes a dimension.
+
+        Args:
+            start_point (APoint): The starting point of the dimension.
+            end_point (APoint): The ending point of the dimension.
+            text_point (APoint): The location for the dimension text.
+            dimension_type (DimensionType): The type of dimension.
+        """
         self.start_point = start_point
         self.end_point = end_point
         self.text_point = text_point
@@ -127,15 +216,24 @@ class Dimension:
         return f"Dimension(start_point={self.start_point}, end_point={self.end_point}, text_point={self.text_point}, dimension_type='{self.dimension_type}')"
 
 
-# Custom class for handling AutoCAD errors
 class CADException(Exception):
+    """Custom exception class for handling AutoCAD-related errors."""
     def __init__(self, message):
+        """
+        Initializes the custom AutoCAD exception.
+        Args:
+            message (str): The error message.
+        """
         super().__init__(message)
-        # Additional error handling logic can be added here, such as logging to a file
         print(f"AutoCADError: {message}")
 
 
 def is_autocad_installed():
+    """
+    Checks if AutoCAD is installed by querying the system's product list.
+    Returns:
+        bool: True if AutoCAD is found, False otherwise.
+    """
     try:
         output = subprocess.check_output('wmic product get name', shell=True, stderr=subprocess.DEVNULL, text=True)
         return "AutoCAD" in output
@@ -144,21 +242,29 @@ def is_autocad_installed():
 
 
 def is_autocad_running():
-    """Check if AutoCAD is running by looking for its process in the system."""
-    # List of possible AutoCAD process names
+    """
+    Checks if an AutoCAD process is currently running on the system.
+
+    Returns:
+        bool: True if an AutoCAD process is running, False otherwise.
+    """
     autocad_processes = ['acad.exe', 'AutoCAD', 'acad']
     for process in psutil.process_iter(['name']):
-        # Check if the process name matches any of the AutoCAD-related names
         if any(autocad_process.lower() in process.info['name'].lower() for autocad_process in autocad_processes):
             return True
     return False
 
 
-# Main class for interacting with AutoCAD
 class AutoCAD:
+    """Main class for interacting with the AutoCAD application via COM."""
     def __init__(self):
+        """
+        Initializes the AutoCAD application object.
+
+        Raises:
+            CADException: If AutoCAD application cannot be initialized.
+        """
         try:
-            # Creating COM client to AutoCad Application
             self.acad = win32com.client.Dispatch("AutoCAD.Application")
             self.acad.Visible = True
         except Exception as e:
@@ -175,38 +281,77 @@ class AutoCAD:
         return self.doc.ModelSpace
 
     def purge(self):
-        """Purges all unused elements in the active document."""
+        """
+        Purges all unused elements (e.g., layers, blocks) in the active document.
+        Raises:
+            CADException: If an error occurs during the purge operation.
+        """
         try:
-            # Purge all named objects
             self.doc.PurgeAll()
             print("Successfully purged the document.")
         except Exception as e:
             raise CADException(f"Error purging AutoCAD document: {e}")
 
-    # Iterate over objects in the model space, optionally filtering by object type
     def iter_objects(self, object_type=None):
+        """
+        Iterates over objects in the model space.
+
+        Args:
+            object_type (str, optional): The type of AutoCAD object to filter by (e.g., 'AcDbCircle').
+                                         If None, iterates over all objects. Defaults to None.
+
+        Yields:
+            The AutoCAD object.
+        """
         for obj in self.modelspace:
             if object_type is None or obj.EntityName == object_type:
                 yield obj
 
-    # Add a circle to the model space
     def add_circle(self, center, radius):
+        """
+        Adds a circle to the model space.
+        Args:
+            center (APoint): The center point of the circle.
+            radius (float): The radius of the circle.
+        Returns:
+            The created circle object.
+        Raises:
+            CADException: If the circle cannot be added.
+        """
         try:
             circle = self.modelspace.AddCircle(center.to_variant(), radius)
             return circle
         except Exception as e:
             raise CADException(f"Error adding circle: {e}")
 
-    # Add a line to the model space
     def add_line(self, start_point, end_point):
+        """
+        Adds a line to the model space.
+        Args:
+            start_point (APoint): The starting point of the line.
+            end_point (APoint): The ending point of the line.
+        Returns:
+            The created line object.
+        Raises:
+            CADException: If the line cannot be added.
+        """
         try:
             line = self.modelspace.AddLine(start_point.to_variant(), end_point.to_variant())
             return line
         except Exception as e:
             raise CADException(f"Error adding line: {e}")
 
-    # Add a rectangle to the model space
     def add_rectangle(self, lower_left, upper_right):
+        """
+        Adds a rectangle (as a closed polyline) to the model space.
+        Args:
+            lower_left (APoint): The lower-left corner of the rectangle.
+            upper_right (APoint): The upper-right corner of the rectangle.
+        Returns:
+            The created polyline object representing the rectangle.
+        Raises:
+            CADException: If the rectangle cannot be added.
+        """
         try:
             x1, y1 = lower_left.to_tuple()
             x2, y2 = upper_right.to_tuple()
@@ -223,24 +368,50 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error adding rectangle: {e}")
 
-    # Add an ellipse to the model space
     def add_ellipse(self, center, major_axis, ratio):
+        """
+        Adds an ellipse to the model space.
+        Args:
+            center (APoint): The center point of the ellipse.
+            major_axis (APoint): A point defining the major axis from the center.
+            ratio (float): The ratio of the minor axis to the major axis.
+        Returns:
+            The created ellipse object.
+        Raises:
+            CADException: If the ellipse cannot be added.
+        """
         try:
             ellipse = self.modelspace.AddEllipse(center.to_variant(), major_axis.to_variant(), ratio)
             return ellipse
         except Exception as e:
             raise CADException(f"Error adding ellipse: {e}")
 
-    # Add a text object to the model space
     def add_text(self, text):
+        """
+        Adds a text object to the model space.
+        Args:
+            text (Text): A Text object containing the content, insertion point, and height.
+        Returns:
+            The created text object.
+        Raises:
+            CADException: If the text cannot be added.
+        """
         try:
             text_obj = self.modelspace.AddText(text.content, text.insertion_point.to_variant(), text.height)
             return text_obj
         except Exception as e:
             raise CADException(f"Error adding text: {e}")
 
-    # Add a dimension to the model space
     def add_dimension(self, dimension):
+        """
+        Adds a dimension to the model space.
+        Args:
+            dimension (Dimension): A Dimension object containing points and type.
+        Returns:
+            The created dimension object.
+        Raises:
+            CADException: If the dimension cannot be added.
+        """
         try:
             dimension_obj = None
             if dimension.dimension_type == DimensionType.ALIGNED:
@@ -267,16 +438,32 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error adding dimension: {e}")
 
-    # Add a point to the model space
     def add_point(self, point):
+        """
+        Adds a point object to the model space.
+        Args:
+            point (APoint): The point to add.
+        Returns:
+            The created point object.
+        Raises:
+            CADException: If the point cannot be added.
+        """
         try:
             point_obj = self.modelspace.AddPoint(point.to_variant())
             return point_obj
         except Exception as e:
             raise CADException(f"Error adding point: {e}")
 
-    # Add a polyline to the model space
     def add_polyline(self, points):
+        """
+        Adds a lightweight polyline to the model space.
+        Args:
+            points (list[APoint]): A list of APoint objects defining the vertices.
+        Returns:
+            The created polyline object.
+        Raises:
+            CADException: If the polyline cannot be added.
+        """
         try:
             points_variant = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8,
                                                      [coord for point in points for coord in point.to_tuple()])
@@ -285,8 +472,16 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error adding polyline: {e}")
 
-    # Add a spline to the model space
     def add_spline(self, points):
+        """
+        Adds a spline to the model space.
+        Args:
+            points (list[APoint]): A list of APoint objects defining the control points.
+        Returns:
+            The created spline object.
+        Raises:
+            CADException: If the spline cannot be added.
+        """
         try:
             points_variant = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8,
                                                      [coord for point in points for coord in point.to_variant()])
@@ -295,24 +490,51 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error adding spline: {e}")
 
-    # Add an arc to the model space
     def add_arc(self, center, radius, start_angle, end_angle):
+        """
+        Adds an arc to the model space.
+        Args:
+            center (APoint): The center point of the arc.
+            radius (float): The radius of the arc.
+            start_angle (float): The starting angle in radians.
+            end_angle (float): The ending angle in radians.
+        Returns:
+            The created arc object.
+        Raises:
+            CADException: If the arc cannot be added.
+        """
         try:
             arc = self.modelspace.AddArc(center.to_variant(), radius, start_angle, end_angle)
             return arc
         except Exception as e:
             raise CADException(f"Error adding arc: {e}")
 
-    # Explode an object or a set of joined objects
     def explode_object(self, obj):
+        """
+        Explodes a complex object (like a block or polyline) into its constituent parts.
+        Args:
+            obj: The AutoCAD object to explode.
+        Returns:
+            list: A list of the exploded objects.
+        Raises:
+            CADException: If the object cannot be exploded.
+        """
         try:
             exploded_items = obj.Explode()
             return exploded_items
         except Exception as e:
             raise CADException(f"Error exploding object: {e}")
 
-    # Get maximum extents of a block
     def get_block_extents(self, block_name):
+        """
+        Gets the geometric extents (bounding box) of a block reference.
+        Args:
+            block_name (str): The name of the block.
+        Returns:
+            tuple(APoint, APoint): A tuple containing the minimum and maximum points of the extents.
+        Raises:
+            CADException: If the block extents cannot be retrieved.
+        """
         try:
             for entity in self.iter_objects("AcDbBlockReference"):
                 if entity.Name == block_name:
@@ -322,21 +544,31 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error getting extents of block '{block_name}': {e}")
 
-    # Add overall dimensions to an object or block
     def add_overall_dimensions(self, entity):
+        """
+        Adds overall horizontal and vertical dimensions to an entity based on its geometric extents.
+        Args:
+            entity: The AutoCAD object to dimension.
+        Raises:
+            CADException: If dimensions cannot be added.
+        """
         try:
             min_point, max_point = APoint(*entity.GeometricExtents.MinPoint), APoint(*entity.GeometricExtents.MaxPoint)
-            # Horizontal dimension
             self.add_dimension(Dimension(min_point, APoint(max_point.x, min_point.y, min_point.z),
                                          APoint(min_point.x, min_point.y - 5, min_point.z), DimensionType.ALIGNED))
-            # Vertical dimension
             self.add_dimension(Dimension(min_point, APoint(min_point.x, max_point.y, min_point.z),
                                          APoint(min_point.x - 5, min_point.y, min_point.z), DimensionType.ALIGNED))
         except Exception as e:
             raise CADException(f"Error adding overall dimensions: {e}")
 
-    # Get user-defined blocks in the document
     def get_user_defined_blocks(self):
+        """
+        Retrieves a list of all user-defined block names in the document.
+        Returns:
+            list[str]: A list of block names.
+        Raises:
+            CADException: If the block list cannot be retrieved.
+        """
         try:
             blocks = self.doc.Blocks
             user_defined_blocks = [block.Name for block in blocks
@@ -345,8 +577,16 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error getting user-defined blocks: {e}")
 
-    # Create a new layer
     def create_layer(self, layer):
+        """
+        Creates a new layer in the document.
+        Args:
+            layer (Layer): A Layer object with name and color properties.
+        Returns:
+            The created layer object.
+        Raises:
+            CADException: If the layer cannot be created.
+        """
         try:
             layers = self.doc.Layers
             new_layer = layers.Add(layer.name)
@@ -355,15 +595,29 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error creating layer '{layer.name}': {e}")
 
-    # Set the active layer
     def set_active_layer(self, layer_name):
+        """
+        Sets the specified layer as the active layer for new objects.
+        Args:
+            layer_name (str): The name of the layer to activate.
+        Raises:
+            CADException: If the layer cannot be set as active.
+        """
         try:
             self.doc.ActiveLayer = self.doc.Layers.Item(layer_name)
         except Exception as e:
             raise CADException(f"Error setting active layer '{layer_name}': {e}")
 
-    # Insert a block into the model space
     def insert_block(self, block):
+        """
+        Inserts a block reference into the model space.
+        Args:
+            block (BlockReference): A BlockReference object with name, insertion point, scale, and rotation.
+        Returns:
+            The created block reference object.
+        Raises:
+            CADException: If the block cannot be inserted.
+        """
         try:
             block_ref = self.modelspace.InsertBlock(block.insertion_point.to_variant(), block.name, block.scale,
                                                     block.scale, block.scale, block.rotation)
@@ -371,27 +625,38 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error inserting block '{block.name}': {e}")
 
-    # Save the document with a new name
     def save_as(self, file_path):
+        """
+        Saves the active document to a new file path.
+        Args:
+            file_path (str): The full path to save the new file.
+        Raises:
+            CADException: If the document cannot be saved.
+        """
         try:
             self.doc.SaveAs(file_path)
         except Exception as e:
             raise CADException(f"Error saving document as '{file_path}': {e}")
 
-    # Save the document
     def save(self):
-        """Saves the active document."""
+        """
+        Saves the active document.
+        Raises:
+            CADException: If an error occurs during saving.
+        """
         try:
             self.doc.Save()
             print("Document saved successfully.")
         except Exception as e:
             raise CADException(f"Error saving AutoCAD document: {e}")
 
-    # Close with save changes or not
     def close(self, save_changes=True):
-        """Closes the active document.
+        """
+        Closes the active document.
         Args:
-            save_changes (bool): If True, saves before closing. If False, closes without saving.
+            save_changes (bool): If True, save changes before closing. Defaults to True.
+        Raises:
+            CADException: If an error occurs during closing.
         """
         try:
             self.doc.Close(SaveChanges=save_changes)
@@ -399,15 +664,29 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error closing AutoCAD document: {e}")
 
-    # Open an existing file
     def open_file(self, file_path):
+        """
+        Opens an existing drawing file.
+        Args:
+            file_path (str): The full path to the file to open.
+        Raises:
+            CADException: If the file cannot be opened.
+        """
         try:
             self.acad.Documents.Open(file_path)
         except Exception as e:
             raise CADException(f"Error opening file '{file_path}': {e}")
 
-    # Get the insertion coordinates of a specific block
     def get_block_coordinates(self, block_name):
+        """
+        Gets the insertion coordinates of all references of a specific block.
+        Args:
+            block_name (str): The name of the block to find.
+        Returns:
+            list[APoint]: A list of APoint objects for each block reference found.
+        Raises:
+            CADException: If an error occurs while retrieving coordinates.
+        """
         try:
             block_references = []
             for entity in self.iter_objects("AcDbBlockReference"):
@@ -418,30 +697,62 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error getting coordinates of block '{block_name}': {e}")
 
-    # Delete an object
     def delete_object(self, obj):
+        """
+        Deletes a specified object from the model space.
+        Args:
+            obj: The AutoCAD object to delete.
+        Raises:
+            CADException: If the object cannot be deleted.
+        """
         try:
             obj.Delete()
         except Exception as e:
             raise CADException(f"Error deleting object: {e}")
 
-    # Clone an object
     def clone_object(self, obj, new_insertion_point):
+        """
+        Creates a copy of an object at a new location.
+        Args:
+            obj: The AutoCAD object to clone.
+            new_insertion_point (APoint): The insertion point for the cloned object.
+        Returns:
+            The newly created cloned object.
+        Raises:
+            CADException: If the object cannot be cloned.
+        """
         try:
             cloned_obj = obj.Copy(new_insertion_point.to_variant())
             return cloned_obj
         except Exception as e:
             raise CADException(f"Error cloning object: {e}")
 
-    # Modify a property of an object
     def modify_object_property(self, obj, property_name, new_value):
+        """
+        Modifies a property of a given object.
+        Args:
+            obj: The AutoCAD object to modify.
+            property_name (str): The name of the property to change (e.g., 'Color').
+            new_value: The new value for the property.
+        Raises:
+            CADException: If the property cannot be modified.
+        """
         try:
             setattr(obj, property_name, new_value)
         except Exception as e:
             raise CADException(f"Error modifying property '{property_name}' of object: {e}")
 
-    # Repeat a block horizontally until a specified length is reached
     def repeat_block_horizontally(self, block_name, total_length, block_length, insertion_point):
+        """
+        Repeats a block horizontally to fill a specified total length.
+        Args:
+            block_name (str): The name of the block to repeat.
+            total_length (float): The total length to fill.
+            block_length (float): The length of a single block.
+            insertion_point (APoint): The starting insertion point.
+        Raises:
+            CADException: If an error occurs during the operation.
+        """
         try:
             x, y, z = insertion_point.x, insertion_point.y, insertion_point.z
             num_blocks = total_length // block_length
@@ -452,40 +763,75 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error repeating block '{block_name}' horizontally: {e}")
 
-    # Set the visibility of a layer
     def set_layer_visibility(self, layer_name, visible=True):
+        """
+        Sets the visibility of a layer.
+        Args:
+            layer_name (str): The name of the layer.
+            visible (bool): True to make the layer visible, False to hide it.
+        Raises:
+            CADException: If the layer visibility cannot be changed.
+        """
         try:
             layer = self.doc.Layers.Item(layer_name)
             layer.LayerOn = visible
         except Exception as e:
             raise CADException(f"Error setting visibility of layer '{layer_name}': {e}")
 
-    # Lock or unlock a layer
     def lock_layer(self, layer_name, lock=True):
+        """
+        Locks or unlocks a layer.
+        Args:
+            layer_name (str): The name of the layer.
+            lock (bool): True to lock the layer, False to unlock it.
+        Raises:
+            CADException: If the layer lock state cannot be changed.
+        """
         try:
             layer = self.doc.Layers.Item(layer_name)
             layer.Lock = lock
         except Exception as e:
             raise CADException(f"Error locking/unlocking layer '{layer_name}': {e}")
 
-    # Delete a layer
     def delete_layer(self, layer_name):
+        """
+        Deletes a layer from the document.
+        Args:
+            layer_name (str): The name of the layer to delete.
+        Raises:
+            CADException: If the layer cannot be deleted.
+        """
         try:
             layer = self.doc.Layers.Item(layer_name)
             layer.Delete()
         except Exception as e:
             raise CADException(f"Error deleting layer '{layer_name}': {e}")
 
-    # Change the color of a layer
     def change_layer_color(self, layer_name, color):
+        """
+        Changes the color of a layer.
+        Args:
+            layer_name (str): The name of the layer.
+            color (Color): The new color for the layer.
+        Raises:
+            CADException: If the layer color cannot be changed.
+        """
         try:
             layer = self.doc.Layers.Item(layer_name)
             layer.color = color.value
         except Exception as e:
             raise CADException(f"Error changing color of layer '{layer_name}': {e}")
 
-    # Set the linetype of a layer
     def set_layer_linetype(self, layer_name, linetype_name):
+        """
+        Sets the linetype for a specific layer. If the linetype is not loaded,
+        it will be loaded from the default '.lin' file.
+        Args:
+            layer_name (str): The name of the layer to modify.
+            linetype_name (str): The name of the linetype to apply (e.g., 'DASHED', 'CENTER').
+        Raises:
+            CADException: If the linetype cannot be set for the layer.
+        """
         try:
             layer = self.doc.Layers.Item(layer_name)
             linetypes = self.doc.Linetypes
@@ -495,49 +841,70 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error setting linetype of layer '{layer_name}': {e}")
 
-    # Move an object
     def move_object(self, obj, new_insertion_point):
+        """
+        Moves an object from its current position to a new insertion point.
+        Args:
+            obj: The AutoCAD object to move.
+            new_insertion_point (APoint): The target point to move the object to.
+        Raises:
+            CADException: If the object does not support the Move() method or an error occurs.
+        """
         try:
-            # Ensure the object is movable
             if not hasattr(obj, "Move"):
                 raise CADException("The object does not support Move().")
-
-            # Get a base point: try InsertionPoint first, fallback to MinPoint
             try:
                 from_point = win32com.client.VARIANT(
                     pythoncom.VT_ARRAY | pythoncom.VT_R8, list(obj.InsertionPoint)
                 )
             except AttributeError:
-                # Fallback for objects without InsertionPoint
                 from_point = win32com.client.VARIANT(
                     pythoncom.VT_ARRAY | pythoncom.VT_R8, list(obj.GeometricExtents.MinPoint)
                 )
-
-            # Convert new target point to VARIANT
             to_point = new_insertion_point.to_variant()
-
-            # Try moving the object
             obj.Move(from_point, to_point)
-
         except Exception as e:
             raise CADException(f"Error moving object (type: {obj.EntityName}): {e}")
 
-    # Scale an object
     def scale_object(self, obj, base_point, scale_factor):
+        """
+        Scales an object by a given factor relative to a base point.
+        Args:
+            obj: The AutoCAD object to scale.
+            base_point (APoint): The base point for the scaling operation.
+            scale_factor (float): The factor by which to scale the object.
+        Raises:
+            CADException: If an error occurs during scaling.
+        """
         try:
             obj.ScaleEntity(base_point.to_variant(), scale_factor)
         except Exception as e:
             raise CADException(f"Error scaling object: {e}")
 
-    # Rotate an object
     def rotate_object(self, obj, base_point, rotation_angle):
+        """
+        Rotates an object around a base point.
+        Args:
+            obj: The AutoCAD object to rotate.
+            base_point (APoint): The base point for the rotation.
+            rotation_angle (float): The angle of rotation in radians.
+        Raises:
+            CADException: If an error occurs during rotation.
+        """
         try:
             obj.Rotate(base_point.to_variant(), rotation_angle)
         except Exception as e:
             raise CADException(f"Error rotating object: {e}")
 
-    # Align objects
     def align_objects(self, objects, alignment=Alignment.LEFT):
+        """
+        Aligns a list of objects horizontally.
+        Args:
+            objects (list): A list of AutoCAD objects to align.
+            alignment (Alignment): The alignment type (LEFT, RIGHT, or CENTER).
+        Raises:
+            CADException: If an error occurs during alignment.
+        """
         try:
             if not objects:
                 return
@@ -557,8 +924,15 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error aligning objects: {e}")
 
-    # Distribute objects with specified spacing
     def distribute_objects(self, objects, spacing):
+        """
+        Distributes objects horizontally with a specified spacing.
+        Args:
+            objects (list): A list of AutoCAD objects to distribute.
+            spacing (float): The horizontal distance between the insertion points of adjacent objects.
+        Raises:
+            CADException: If an error occurs during distribution.
+        """
         try:
             if not objects:
                 return
@@ -569,8 +943,19 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error distributing objects: {e}")
 
-    # Insert a block from a file
     def insert_block_from_file(self, file_path, insertion_point, scale=1.0, rotation=0.0):
+        """
+        Inserts a block into the current drawing from an external file.
+        Args:
+            file_path (str): The path to the .dwg file containing the block definition.
+            insertion_point (APoint): The point where the block will be inserted.
+            scale (float): The scale factor for the block.
+            rotation (float): The rotation angle in radians.
+        Returns:
+            The created block reference object.
+        Raises:
+            CADException: If the block cannot be inserted from the file.
+        """
         try:
             block_name = self.doc.Blocks.Import(file_path, file_path)
             block_ref = self.modelspace.InsertBlock(insertion_point.to_variant(), block_name, scale, scale, scale,
@@ -579,16 +964,31 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error inserting block from file '{file_path}': {e}")
 
-    # Export a block to a file
     def export_block_to_file(self, block_name, file_path):
+        """
+        Exports a block definition from the current drawing to a new .dwg file.
+        Args:
+            block_name (str): The name of the block to export.
+            file_path (str): The destination path for the new .dwg file.
+        Raises:
+            CADException: If the block cannot be exported.
+        """
         try:
             block = self.doc.Blocks.Item(block_name)
             block.Export(file_path)
         except Exception as e:
             raise CADException(f"Error exporting block '{block_name}' to '{file_path}': {e}")
 
-    # Modify a block attribute
     def modify_block_attribute(self, block_ref, tag, new_value):
+        """
+        Modifies the value of a specific attribute within a block reference.
+        Args:
+            block_ref: The block reference object containing the attribute.
+            tag (str): The tag string of the attribute to modify.
+            new_value (str): The new text value for the attribute.
+        Raises:
+            CADException: If the attribute cannot be modified.
+        """
         try:
             for attribute in block_ref.GetAttributes():
                 if attribute.TagString == tag:
@@ -597,6 +997,16 @@ class AutoCAD:
             raise CADException(f"Error modifying block attribute '{tag}': {e}")
 
     def modify_block_attribute_by_old_value(self, block_ref, tag, old_value, new_value):
+        """
+        Modifies a block attribute only if its current value matches a specific value.
+        Args:
+            block_ref: The block reference object.
+            tag (str): The tag string of the attribute.
+            old_value (str): The expected current value of the attribute.
+            new_value (str): The new value to set if the old value matches.
+        Raises:
+            CADException: If an error occurs during modification.
+        """
         try:
             for attribute in block_ref.GetAttributes():
                 if attribute.TagString == tag:
@@ -605,8 +1015,15 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error modifying block attribute '{tag}': {e}")
 
-    # Delete a block attribute
     def delete_block_attribute(self, block_ref, tag):
+        """
+        Deletes an attribute from a block reference.
+        Args:
+            block_ref: The block reference object.
+            tag (str): The tag string of the attribute to delete.
+        Raises:
+            CADException: If the attribute cannot be deleted.
+        """
         try:
             for attribute in block_ref.GetAttributes():
                 if attribute.TagString == tag:
@@ -614,37 +1031,76 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error deleting block attribute '{tag}': {e}")
 
-    # Request point input from the user
     def get_user_input_point(self, prompt="Select a point"):
+        """
+        Prompts the user to select a point in the AutoCAD drawing area.
+        Args:
+            prompt (str): The message to display to the user.
+        Returns:
+            APoint: The point selected by the user.
+        Raises:
+            CADException: If the user cancels or an error occurs.
+        """
         try:
             point = self.doc.Utility.GetPoint(None, prompt)
             return APoint(point[0], point[1], point[2])
         except Exception as e:
             raise CADException(f"Error getting point input from user: {e}")
 
-    # Request string input from the user
     def get_user_input_string(self, prompt="Enter a string"):
+        """
+        Prompts the user to enter a string in the command line.
+        Args:
+            prompt (str): The message to display to the user.
+        Returns:
+            str: The string entered by the user.
+        Raises:
+            CADException: If the user cancels or an error occurs.
+        """
         try:
             return self.doc.Utility.GetString(False, prompt)
         except Exception as e:
             raise CADException(f"Error getting string input from user: {e}")
 
-    # Request integer input from the user
     def get_user_input_integer(self, prompt="Enter an integer"):
+        """
+        Prompts the user to enter an integer in the command line.
+        Args:
+            prompt (str): The message to display to the user.
+        Returns:
+            int: The integer entered by the user.
+        Raises:
+            CADException: If the user cancels or an error occurs.
+        """
         try:
             return self.doc.Utility.GetInteger(prompt)
         except Exception as e:
             raise CADException(f"Error getting integer input from user: {e}")
 
-    # Display a message to the user
     def show_message(self, message):
+        """
+        Displays a message in the AutoCAD command line.
+        Args:
+            message (str): The message to display.
+        Raises:
+            CADException: If the message cannot be displayed.
+        """
         try:
             self.doc.Utility.Prompt(message + "\n")
         except Exception as e:
             raise CADException(f"Error displaying message: {e}")
 
-    # Create a group of objects
     def create_group(self, group_name, objects):
+        """
+        Creates a new group containing the specified objects.
+        Args:
+            group_name (str): The name for the new group.
+            objects (list): A list of AutoCAD objects to include in the group.
+        Returns:
+            The created group object.
+        Raises:
+            CADException: If the group cannot be created.
+        """
         try:
             group = self.doc.Groups.Add(group_name)
             for obj in objects:
@@ -653,8 +1109,16 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error creating group '{group_name}': {e}")
 
-    # Add objects to a group
     def add_to_group(self, group_name, objects):
+        """
+        Adds objects to an existing group.
+        Args:
+            group_name (str): The name of the group to add to.
+            objects (list): A list of AutoCAD objects to add.
+
+        Raises:
+            CADException: If objects cannot be added to the group.
+        """
         try:
             group = self.doc.Groups.Item(group_name)
             for obj in objects:
@@ -662,8 +1126,16 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error adding objects to group '{group_name}': {e}")
 
-    # Remove objects from a group
     def remove_from_group(self, group_name, objects):
+        """
+        Removes objects from a group.
+        Args:
+            group_name (str): The name of the group to remove from.
+            objects (list): A list of AutoCAD objects to remove.
+
+        Raises:
+            CADException: If objects cannot be removed from the group.
+        """
         try:
             group = self.doc.Groups.Item(group_name)
             for obj in objects:
@@ -671,10 +1143,146 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error removing objects from group '{group_name}': {e}")
 
-    # Select a group of objects
     def select_group(self, group_name):
+        """
+        Retrieves all objects within a specified group.
+        Args:
+            group_name (str): The name of the group to select.
+        Returns:
+            list: A list of the objects contained within the group.
+        Raises:
+            CADException: If the group cannot be found or selected.
+        """
         try:
             group = self.doc.Groups.Item(group_name)
             return [item for item in group.GetItems()]
         except Exception as e:
             raise CADException(f"Error selecting group '{group_name}': {e}")
+
+    def add_mtext(self, content: str, insertion_point: APoint, width: float, height: float):
+        """
+        Adds a multiline text (MText) object to the model space.
+        Args:
+            content (str): The text string to display. Can include newlines.
+            insertion_point (APoint): The insertion point for the top-left corner of the text box.
+            width (float): The width of the MText bounding box.
+            height (float): The height of the text characters.
+        Returns:
+            The created MText object.
+
+        Raises:
+            CADException: If the MText object cannot be added.
+        """
+        try:
+            mtext_obj = self.modelspace.AddMText(insertion_point.to_variant(), width, content)
+            mtext_obj.Height = height
+            return mtext_obj
+        except Exception as e:
+            raise CADException(f"Error adding MText: {e}")
+
+    def zoom_extents(self):
+        """
+        Zooms the active viewport to display all objects in the drawing (Zoom Extents).
+        Raises:
+            CADException: If the zoom operation fails.
+        """
+        try:
+            self.acad.ZoomExtents()
+        except Exception as e:
+            raise CADException(f"Error performing Zoom Extents: {e}")
+
+    def zoom_to_object(self, obj):
+        """
+        Zooms the active viewport to fit a specific object.
+        Args:
+            obj: The AutoCAD object to zoom to.
+        Raises:
+            CADException: If the zoom operation fails.
+        """
+        try:
+            min_point_variant = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8,
+                                                        obj.GeometricExtents.MinPoint)
+            max_point_variant = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8,
+                                                        obj.GeometricExtents.MaxPoint)
+            self.acad.ZoomWindow(min_point_variant, max_point_variant)
+        except Exception as e:
+            raise CADException(f"Error zooming to object: {e}")
+
+    def add_table(self, table_obj: Table):
+        """
+        Adds a fully-featured table to the model space from a Table object.
+        Args:
+            table_obj (Table): The Table data object to draw.
+        Returns:
+            The created AutoCAD table object.
+        Raises:
+            CADException: If the table cannot be created or data is inconsistent.
+        """
+        try:
+            # --- 1. Validate input and determine dimensions ---
+            if not table_obj.data or not isinstance(table_obj.data[0], list):
+                raise ValueError("Input 'data' must be a non-empty list of lists.")
+
+            num_data_rows = len(table_obj.data)
+            num_cols = len(table_obj.data[0])
+
+            if table_obj.headers and len(table_obj.headers) != num_cols:
+                raise ValueError("Number of headers must match the number of columns in data.")
+
+            total_rows = num_data_rows
+            has_title = table_obj.title is not None
+            has_headers = table_obj.headers is not None
+            if has_title:
+                total_rows += 1
+            if has_headers:
+                total_rows += 1
+
+            default_col_width = 20.0
+            if table_obj.col_widths and table_obj.col_widths[0] > 0:
+                default_col_width = table_obj.col_widths[0]
+
+            table = self.modelspace.AddTable(table_obj.insertion_point.to_variant(), total_rows, num_cols,
+                                             table_obj.row_height, default_col_width)
+
+            alignment_map = {
+                Alignment.LEFT: 4,
+                Alignment.CENTER: 5,
+                Alignment.RIGHT: 6,
+            }
+            acad_alignment = alignment_map.get(table_obj.alignment, 5)
+
+            table.SetTextHeight(table_obj.text_height)
+            table.SetAlignment(acad_alignment)
+
+            current_row = 0
+            if has_title:
+                table.SetRowType(current_row, 1)  # 1 = acTitleRow
+                table.SetText(current_row, 0, table_obj.title)
+                table.MergeCells(current_row, 0, current_row, num_cols - 1)
+                current_row += 1
+
+            if has_headers:
+                table.SetRowType(current_row, 2)  # 2 = acHeaderRow
+                for col_idx, header_text in enumerate(table_obj.headers):
+                    table.SetText(current_row, col_idx, header_text)
+                current_row += 1
+
+            for row_idx, data_row in enumerate(table_obj.data):
+                if len(data_row) != num_cols:
+                    raise ValueError(f"Inconsistent number of columns in data row {row_idx}.")
+                for col_idx, cell_text in enumerate(data_row):
+                    table.SetText(current_row + row_idx, col_idx, str(cell_text))
+
+            if table_obj.col_widths:
+                if len(table_obj.col_widths) != num_cols:
+                    raise ValueError("Number of column widths must match the number of columns.")
+                for i, width in enumerate(table_obj.col_widths):
+                    table.SetColumnWidth(i, width)
+
+            table.GenerateLayout()
+            return table
+
+        except ValueError as ve:
+            raise CADException(f"Invalid input for table creation: {ve}")
+        except Exception as e:
+            raise CADException(f"Error adding table: {e}")

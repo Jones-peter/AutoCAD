@@ -1,10 +1,7 @@
-
 ![Banner](./images/banner.png)
 
-# AutoCAD Module
-
+# AutoCAD - python library Latest Version 0.1.5
 [![GitHub](https://img.shields.io/badge/GitHub-Jones--peter-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Jones-peter)  [![Instagram](https://img.shields.io/badge/Instagram-jones__peter__-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/jones_peter__/)  [![LinkedIn](https://img.shields.io/badge/LinkedIn-Jones--Peter-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/jones-peter-121157221/)  [![Website](https://img.shields.io/badge/Website-jonespeter.site-0078D4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://jonespeter.site)
-
 
 ## Overview
 
@@ -12,11 +9,13 @@ The `AutoCAD` module provides a comprehensive interface for interacting with Aut
 
 ## Features
 
-- **Object Creation**: Create circles, lines, rectangles, ellipses, text objects, dimensions, points, polylines, splines, arcs, and more.
+- **Object Creation**: Create circles, lines, rectangles, ellipses, text, MText, dimensions, points, polylines, splines, arcs, and advanced tables.
 - **Layer Management**: Create, delete, lock/unlock, and modify layers.
 - **Block Operations**: Insert, export, and modify blocks and their attributes.
 - **Group Management**: Create, add to, remove from, and select groups of objects.
 - **User Interaction**: Request point, string, and integer inputs from the user.
+- **View Management**: Control the drawing view with Zoom Extents and Zoom to Object.
+- **Utility Functions**: Check if AutoCAD is installed or running.
 - **Error Handling**: Custom exception handling for AutoCAD-related errors.
 
 ## Installation
@@ -29,7 +28,7 @@ pip install AutoCAD
 
 ## Usage
 
-### Initialization
+### Initialization 🎚️
 
 To start using the module, initialize the `AutoCAD` class:
 
@@ -39,7 +38,7 @@ from AutoCAD import AutoCAD
 cad = AutoCAD()
 ```
 
-### Object Creation
+### Object Creation 🪄
 
 - **add_circle(center, radius)**: Adds a circle to the model space.
 
@@ -118,8 +117,28 @@ cad = AutoCAD()
   end_angle = 180
   arc = cad.add_arc(center, radius, start_angle, end_angle)
   ```
+  
+- **add_table(table_obj)**: Adds a fully-featured table.
+  ```python
+  from AutoCAD import Table, Alignment
+  data = [
+      ["Row 1, Col 1", "Row 1, Col 2", "Row 1, Col 3"],
+      ["Row 2, Col 1", "Row 2, Col 2", "Row 2, Col 3"]
+  ]
+  headers = ["Header 1", "Header 2", "Header 3"]
+  table = Table(
+      insertion_point=APoint(30, 30, 0),
+      data=data,
+      headers=headers,
+      title="My Custom Table",
+      col_widths=[30, 30, 30],
+      text_height=2.0,
+      alignment=Alignment.CENTER
+  )
+  table_obj = cad.add_table(table)
+  ```
 
-### Layer Management
+### Layer Management 🧩
 
 - **create_layer(layer)**: Creates a new layer.
 
@@ -164,7 +183,7 @@ cad = AutoCAD()
   cad.set_layer_linetype("MyLayer", "Dashed")
   ```
 
-### Block Operations
+### Block Operations 🧱
 
 - **insert_block(block)**: Inserts a block into the model space.
 
@@ -215,7 +234,7 @@ cad = AutoCAD()
   cad.delete_block_attribute(block_ref, "TagName")
   ```
 
-### Group Management
+### Group Management ⛓️
 
 - **create_group(group_name, objects)**: Creates a group of objects.
 
@@ -241,7 +260,7 @@ cad = AutoCAD()
   group_items = cad.select_group("MyGroup")
   ```
 
-### User Interaction
+### User Interaction 🧑‍💻
 
 - **get_user_input_point(prompt="Select a point")**: Requests point input from the user.
 
@@ -267,7 +286,7 @@ cad = AutoCAD()
   cad.show_message("Operation completed successfully.")
   ```
 
-### Document Management
+### Document Management 📃📂
 
 - **purge()**: Purges all unused elements in the active document.
 
@@ -298,8 +317,22 @@ cad = AutoCAD()
   ```python
   cad.open_file("path/to/open.dwg")
   ```
+  
+### View Management 🔍
+- **zoom_extents():** Zooms the viewport to display all objects.
 
-### Object Manipulation
+  ```python
+  cad.zoom_extents()
+  ```
+
+- **zoom_to_object(obj)**: Zooms the viewport to fit a specific object.
+
+  ```Python
+  # Assuming 'circle' is an object created earlier
+  cad.zoom_to_object(circle)
+  ```
+
+### Object Manipulation 🛠️
 
 - **explode_object(obj)**: Explodes an object or a set of joined objects.
 
@@ -361,23 +394,37 @@ cad = AutoCAD()
   cad.distribute_objects([circle, line, rectangle], 5)
   ```
 
-### Error Handling
+### Error Handling ❌
 
 The module includes custom error handling through the `CADException` class, which provides detailed error messages for AutoCAD-related operations.
 
-## Contributing
+## Contributing 🤝💗
+[![CONTRIBUTING](https://img.shields.io/badge/Contributing-Join%20Us-brightgreen)](CONTRIBUTING.md)
 
-Contributions are welcome! Please fork the repository and submit a pull request with your improvements.
 
-## License
+## Reporting Bugs 🪲
+
+If you encounter a bug, please open an issue on GitHub. Please include the following:
+* Your version of AutoCAD.
+* A clear and concise description of the bug.
+* Steps to reproduce the behavior.
+* A code snippet demonstrating the issue.
+
+## Suggesting Enhancements 💭📈
+
+If you have an idea for a new feature, feel free to open an issue to discuss it. Please provide:
+* A clear description of the feature and the problem it solves.
+* Any sample code or use-cases you might have in mind.
+
+## License 🔒
 
 This project is licensed under the MIT License.
 
-## Contact
+## Contact 📧
 
 For any questions or support, please contact [jonespetersoftware@gmail.com].
 
-## Credits
+## Credits 🥇🫡
 
 This project was inspired by and builds upon the work from the following repositories:
 
