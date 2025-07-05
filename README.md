@@ -1,6 +1,6 @@
 ![Banner](./images/banner.png)
 
-# AutoCAD - python library Latest Version 0.1.5
+# AutoCAD - python library Latest Version 0.1.6
 [![GitHub](https://img.shields.io/badge/GitHub-Jones--peter-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Jones-peter)  [![Instagram](https://img.shields.io/badge/Instagram-jones__peter__-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/jones_peter__/)  [![LinkedIn](https://img.shields.io/badge/LinkedIn-Jones--Peter-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/jones-peter-121157221/)  [![Website](https://img.shields.io/badge/Website-jonespeter.site-0078D4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://jonespeter.site)
 
 ## Overview
@@ -392,6 +392,11 @@ cad = AutoCAD()
 
   ```python
   cad.distribute_objects([circle, line, rectangle], 5)
+  ```
+
+- **get_entity_extents(entity):**: To get Min and Max Point of an Entity
+  ```python
+    min_point, max_point = cad.get_entity_extents(entity)
   ```
 
 ### Error Handling ❌

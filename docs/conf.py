@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.abspath('..'))  # so Sphinx can find AutoCAD/
 
 project = 'AutoCAD'
 author = 'Jones Peter'
-release = '0.1.5'
+release = '0.1.6'
 
 extensions = [
     'sphinx.ext.autodoc',

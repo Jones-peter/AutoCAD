@@ -525,6 +525,7 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error exploding object: {e}")
 
+
     def get_block_extents(self, block_name):
         """
         Gets the geometric extents (bounding box) of a block reference.
@@ -538,28 +539,56 @@ class AutoCAD:
         try:
             for entity in self.iter_objects("AcDbBlockReference"):
                 if entity.Name == block_name:
-                    min_point = APoint(*entity.GeometricExtents.MinPoint)
-                    max_point = APoint(*entity.GeometricExtents.MaxPoint)
-                    return min_point, max_point
+                    print(entity.GetBoundingBox)
+                    min_pt, max_pt = entity.GetBoundingBox()
+                    return APoint(*min_pt), APoint(*max_pt)
         except Exception as e:
             raise CADException(f"Error getting extents of block '{block_name}': {e}")
 
+    def get_entity_extents(self, entity):
+        """
+        Returns the bounding box (min and max APoint) of any AutoCAD entity using GetBoundingBox.
+
+        Args:
+            entity: The AutoCAD COM object (line, block, polyline, etc.)
+        Returns:
+            tuple(APoint, APoint): Min and Max APoint
+        Raises:
+            CADException: If bounding box can't be computed
+        """
+        try:
+            min_pt, max_pt = entity.GetBoundingBox()
+            return APoint(*min_pt), APoint(*max_pt)
+        except Exception as e:
+            raise CADException(f"Cannot get bounding box for entity: {e}")
+
     def add_overall_dimensions(self, entity):
         """
-        Adds overall horizontal and vertical dimensions to an entity based on its geometric extents.
+        Adds overall horizontal and vertical dimensions to an entity based on its bounding box.
         Args:
             entity: The AutoCAD object to dimension.
         Raises:
             CADException: If dimensions cannot be added.
         """
         try:
-            min_point, max_point = APoint(*entity.GeometricExtents.MinPoint), APoint(*entity.GeometricExtents.MaxPoint)
-            self.add_dimension(Dimension(min_point, APoint(max_point.x, min_point.y, min_point.z),
-                                         APoint(min_point.x, min_point.y - 5, min_point.z), DimensionType.ALIGNED))
-            self.add_dimension(Dimension(min_point, APoint(min_point.x, max_point.y, min_point.z),
-                                         APoint(min_point.x - 5, min_point.y, min_point.z), DimensionType.ALIGNED))
+            min_point, max_point = self.get_entity_extents(entity)
+
+            self.add_dimension(Dimension(
+                min_point,
+                APoint(max_point.x, min_point.y, min_point.z),
+                APoint((min_point.x + max_point.x) / 2, min_point.y - 5, min_point.z),
+                DimensionType.ALIGNED
+            ))
+
+            self.add_dimension(Dimension(
+                min_point,
+                APoint(min_point.x, max_point.y, min_point.z),
+                APoint(min_point.x - 5, (min_point.y + max_point.y) / 2, min_point.z),
+                DimensionType.ALIGNED
+            ))
+
         except Exception as e:
-            raise CADException(f"Error adding overall dimensions: {e}")
+            raise CADException(f"Failed to add overall dimensions: {e}")
 
     def get_user_defined_blocks(self):
         """
@@ -1193,18 +1222,19 @@ class AutoCAD:
 
     def zoom_to_object(self, obj):
         """
-        Zooms the active viewport to fit a specific object.
+        Zooms the active viewport to fit a specific object using GetBoundingBox.
         Args:
             obj: The AutoCAD object to zoom to.
         Raises:
             CADException: If the zoom operation fails.
         """
         try:
-            min_point_variant = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8,
-                                                        obj.GeometricExtents.MinPoint)
-            max_point_variant = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8,
-                                                        obj.GeometricExtents.MaxPoint)
+            min_pt, max_pt = obj.GetBoundingBox()
+            min_point_variant = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8, min_pt)
+            max_point_variant = win32com.client.VARIANT(pythoncom.VT_ARRAY | pythoncom.VT_R8, max_pt)
+
             self.acad.ZoomWindow(min_point_variant, max_point_variant)
+
         except Exception as e:
             raise CADException(f"Error zooming to object: {e}")
 
@@ -1219,7 +1249,6 @@ class AutoCAD:
             CADException: If the table cannot be created or data is inconsistent.
         """
         try:
-            # --- 1. Validate input and determine dimensions ---
             if not table_obj.data or not isinstance(table_obj.data[0], list):
                 raise ValueError("Input 'data' must be a non-empty list of lists.")
 
@@ -1256,13 +1285,13 @@ class AutoCAD:
 
             current_row = 0
             if has_title:
-                table.SetRowType(current_row, 1)  # 1 = acTitleRow
+                table.SetRowType(current_row, 1)
                 table.SetText(current_row, 0, table_obj.title)
                 table.MergeCells(current_row, 0, current_row, num_cols - 1)
                 current_row += 1
 
             if has_headers:
-                table.SetRowType(current_row, 2)  # 2 = acHeaderRow
+                table.SetRowType(current_row, 2)
                 for col_idx, header_text in enumerate(table_obj.headers):
                     table.SetText(current_row, col_idx, header_text)
                 current_row += 1
