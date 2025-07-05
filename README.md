@@ -5,7 +5,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/AutoCAD)](https://pypi.org/project/AutoCAD/)
 [![Downloads](https://static.pepy.tech/badge/AutoCAD)](https://pepy.tech/project/AutoCAD)
-[![License](https://img.shields.io/github/license/Jones-peter/AutoCAD)](https://github.com/Jones-peter/AutoCAD/blob/main/LICENSE)
+[![License](https://img.shields.io/github/license/Jones-peter/AutoCAD)](https://github.com/Jones-peter/AutoCAD/blob/master/LICENSE)
 ## Overview
 
 The `AutoCAD` module provides a comprehensive interface for interacting with AutoCAD through Python. It leverages the COM client to automate tasks within AutoCAD, allowing for efficient manipulation of drawings and objects.
