@@ -1,10 +1,14 @@
 from setuptools import setup, find_packages
+import sys
 
-requirements = ['psutil', 'pywin32']
+requirements = ['psutil']
+# Add Windows-specific requirements only when on Windows
+if sys.platform == 'win32':
+    requirements.append('pywin32')
 
 setup(
     name="AutoCAD",
-    version="0.1.7",
+    version="0.1.8",
     packages=find_packages(),
     install_requires=requirements,
     entry_points={
@@ -30,6 +34,7 @@ setup(
     include_package_data=True,
     project_urls={
         "Homepage": "https://github.com/Jones-peter/AutoCAD",
+        "Documentation": "https://autocad-automation.readthedocs.io/",
         "Bug Tracker": "https://github.com/Jones-peter/AutoCAD/issues",
     },
 )
