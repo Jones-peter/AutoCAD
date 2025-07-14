@@ -1,4 +1,4 @@
+AutoCAD
 sphinx
-furo  # (or any other theme you like)
-sphinx-autodoc-typehints
 sphinx_rtd_theme
+myst-parser
