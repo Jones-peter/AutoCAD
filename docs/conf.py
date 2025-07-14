@@ -63,9 +63,10 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 # -- Extension configuration -------------------------------------------------
-autodoc_mock_imports = ["win32com", "pythoncom", "psutil", "pywin32"]
+
 # Configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 # Autodoc configuration
 autodoc_member_order = 'bysource'
+autodoc_mock_imports = ["win32com", "pythoncom", "psutil", "pywin32"]
