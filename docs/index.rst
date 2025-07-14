@@ -317,6 +317,7 @@ Contact & Credits
 =================
 
 For questions or support, please contact `jonespetersoftware@gmail.com <mailto:jonespetersoftware@gmail.com>`_.
+my web page `jonespeter.site <https://jonespeter.site/>`_.
 
 .. seealso::
    This project was inspired by the excellent work in the `pyautocad <https://github.com/reclosedev/pyautocad>`_ and `AutoCAD <https://github.com/manufino/AutoCAD>`_ repositories.
