@@ -225,7 +225,7 @@ class CADException(Exception):
             message (str): The error message.
         """
         super().__init__(message)
-        print(f"AutoCADError: {message}")
+        print(f"AutoCAD Error: {message}")
 
 
 def is_autocad_installed():
