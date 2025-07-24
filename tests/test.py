@@ -4,7 +4,7 @@ from AutoCAD import AutoCAD, APoint
 
 acad = AutoCAD()
 time.sleep(1)
-acad.open_file("D:/jones/Jones/USTS_WHEELSENSOR_SHEET.DWG")
+acad.open_file("D:/jones/Jones/test.DWG")
 time.sleep(1)
 # Collect all block references
 blocks = list(acad.iter_objects("AcDbBlockReference"))

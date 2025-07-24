@@ -145,33 +145,31 @@ class BlockReference:
 
 
 class Table:
-    """Represents a full-featured AutoCAD table."""
-    def __init__(self, insertion_point: APoint, data: list[list[str]], headers: list[str] = None, title: str = None,
-                 col_widths: list[float] = None, row_height: float = 8.0, text_height: float = 2.5,
-                 alignment: Alignment = Alignment.CENTER):
+    """Represents a data table to be drawn in AutoCAD."""
+
+    def __init__(self, insertion_point: APoint, data: list[list[str]], headers: list[str] = None,
+                 col_widths: list[float] = None, row_height: float = 8.0, text_height: float = 2.5, text_style: str = None):
         """
         Initializes a table data object.
         Args:
             insertion_point (APoint): The top-left insertion point for the table.
             data (list[list[str]]): A list of lists representing the table's body data.
             headers (list[str], optional): A list of strings for the header row. Defaults to None.
-            title (str, optional): A title for the table. Defaults to None.
-            col_widths (list[float], optional): A list of widths for each column. If None, widths are automatic.
+            col_widths (list[float], optional): A list of widths for each column.
             row_height (float): The height for each row.
             text_height (float): The default text height for cells.
-            alignment (Alignment): The alignment for cell content. Defaults to Alignment.CENTER.
+            text_style (str, optional): The text style to use. Defaults to None (use default).
         """
         self.insertion_point = insertion_point
         self.data = data
         self.headers = headers
-        self.title = title
         self.col_widths = col_widths
         self.row_height = row_height
         self.text_height = text_height
-        self.alignment = alignment
+        self.text_style = text_style
 
     def __repr__(self):
-        return f"Table(title='{self.title}', rows={len(self.data)}, cols={len(self.data[0]) if self.data else 0})"
+        return f"Table(rows={len(self.data)}, cols={len(self.data[0]) if self.data else 0}, text_style={self.text_style})"
 
 
 class Text:
@@ -1188,14 +1186,19 @@ class AutoCAD:
         except Exception as e:
             raise CADException(f"Error selecting group '{group_name}': {e}")
 
-    def add_mtext(self, content: str, insertion_point: APoint, width: float, height: float):
+    def add_mtext(self, content: str, insertion_point: APoint, width: float, height: float, text_style: str = None,
+                  attachment_point: int = 1):
         """
-        Adds a multiline text (MText) object to the model space.
+        Adds a multiline text (MText) object to the model space with specified alignment.
+
         Args:
             content (str): The text string to display. Can include newlines.
-            insertion_point (APoint): The insertion point for the top-left corner of the text box.
+            insertion_point (APoint): The insertion point for the text, relative to the alignment.
             width (float): The width of the MText bounding box.
             height (float): The height of the text characters.
+            text_style (str, optional): The name of the text style to use. Defaults to None (use default).
+            attachment_point (int): The COM constant for the attachment point (e.g., 1 for TopLeft, 5 for MiddleCenter).
+
         Returns:
             The created MText object.
 
@@ -1203,8 +1206,31 @@ class AutoCAD:
             CADException: If the MText object cannot be added.
         """
         try:
-            mtext_obj = self.modelspace.AddMText(insertion_point.to_variant(), width, content)
+            temp_point = APoint(0, 0, 0)
+            mtext_obj = self.modelspace.AddMText(temp_point.to_variant(), width, content)
             mtext_obj.Height = height
+
+            mtext_obj.AttachmentPoint = attachment_point
+            if text_style:
+                text_styles = self.doc.TextStyles
+                style_exists = False
+                for style in text_styles:
+                    if style.Name.lower() == text_style.lower():
+                        style_exists = True
+                        break
+
+                if style_exists:
+                    try:
+                        mtext_obj.StyleName = text_style
+                    except Exception as e:
+                        print(f"Error setting TextStyle '{text_style}': {e}. Using default.")
+                        mtext_obj.StyleName = "Standard"
+                else:
+                    print(f"Warning: TextStyle '{text_style}' not found in drawing. Using 'Standard' style.")
+                    mtext_obj.StyleName = "Standard"
+
+            mtext_obj.InsertionPoint = insertion_point.to_variant()
+
             return mtext_obj
         except Exception as e:
             raise CADException(f"Error adding MText: {e}")
@@ -1240,78 +1266,93 @@ class AutoCAD:
 
     def add_table(self, table_obj: Table):
         """
-        Adds a fully-featured table to the model space from a Table object.
+        Adds a table to the model space by manually drawing lines and text.
+        This version is optimized for tables with headers and data only (no title)
+        and provides precise text alignment within each cell.
+
         Args:
             table_obj (Table): The Table data object to draw.
-        Returns:
-            The created AutoCAD table object.
         Raises:
             CADException: If the table cannot be created or data is inconsistent.
         """
         try:
             if not table_obj.data or not isinstance(table_obj.data[0], list):
                 raise ValueError("Input 'data' must be a non-empty list of lists.")
-
-            num_data_rows = len(table_obj.data)
             num_cols = len(table_obj.data[0])
-
+            if num_cols == 0:
+                raise ValueError("Input 'data' must contain at least one column.")
             if table_obj.headers and len(table_obj.headers) != num_cols:
                 raise ValueError("Number of headers must match the number of columns in data.")
+            if not table_obj.col_widths or len(table_obj.col_widths) != num_cols:
+                raise ValueError("A list of column widths matching the number of columns is required for manual creation.")
 
-            total_rows = num_data_rows
-            has_title = table_obj.title is not None
-            has_headers = table_obj.headers is not None
-            if has_title:
-                total_rows += 1
-            if has_headers:
-                total_rows += 1
+            ip = table_obj.insertion_point
+            col_widths = table_obj.col_widths
+            row_height = table_obj.row_height
+            total_width = sum(col_widths)
 
-            default_col_width = 20.0
-            if table_obj.col_widths and table_obj.col_widths[0] > 0:
-                default_col_width = table_obj.col_widths[0]
+            num_data_rows = len(table_obj.data)
+            num_header_rows = 1 if table_obj.headers else 0
+            num_total_rows = num_header_rows + num_data_rows
+            total_height = num_total_rows * row_height
 
-            table = self.modelspace.AddTable(table_obj.insertion_point.to_variant(), total_rows, num_cols,
-                                             table_obj.row_height, default_col_width)
+            current_y = ip.y
+            for _ in range(num_total_rows + 1):
+                self.add_line(APoint(ip.x, current_y), APoint(ip.x + total_width, current_y))
+                current_y -= row_height
 
-            alignment_map = {
-                Alignment.LEFT: 4,
-                Alignment.CENTER: 5,
-                Alignment.RIGHT: 6,
-            }
-            acad_alignment = alignment_map.get(table_obj.alignment, 5)
+            current_x = ip.x
+            for width in col_widths:
+                self.add_line(APoint(current_x, ip.y), APoint(current_x, ip.y - total_height))
+                current_x += width
+            self.add_line(APoint(ip.x + total_width, ip.y), APoint(ip.x + total_width, ip.y - total_height))
 
-            table.SetTextHeight(table_obj.text_height)
-            table.SetAlignment(acad_alignment)
+            acAttachmentPointMiddleCenter = 5
 
-            current_row = 0
-            if has_title:
-                table.SetRowType(current_row, 1)
-                table.SetText(current_row, 0, table_obj.title)
-                table.MergeCells(current_row, 0, current_row, num_cols - 1)
-                current_row += 1
+            current_y = ip.y
 
-            if has_headers:
-                table.SetRowType(current_row, 2)
+            # Header Row
+            if table_obj.headers:
+                current_x = ip.x
                 for col_idx, header_text in enumerate(table_obj.headers):
-                    table.SetText(current_row, col_idx, header_text)
-                current_row += 1
+                    cell_width = col_widths[col_idx]
 
-            for row_idx, data_row in enumerate(table_obj.data):
-                if len(data_row) != num_cols:
-                    raise ValueError(f"Inconsistent number of columns in data row {row_idx}.")
+                    cell_center_x = current_x + (cell_width / 2)
+                    cell_center_y = current_y - (row_height / 2)
+
+                    mtext_obj = self.add_mtext(
+                        content=str(header_text),
+                        insertion_point=APoint(cell_center_x, cell_center_y),
+                        width=cell_width * 0.95,
+                        height=table_obj.text_height,
+                        text_style=table_obj.text_style,
+                        attachment_point=acAttachmentPointMiddleCenter
+                    )
+                    mtext_obj.AttachmentPoint = acAttachmentPointMiddleCenter
+                    current_x += cell_width
+                current_y -= row_height
+
+            for data_row in table_obj.data:
+                current_x = ip.x
                 for col_idx, cell_text in enumerate(data_row):
-                    table.SetText(current_row + row_idx, col_idx, str(cell_text))
+                    cell_width = col_widths[col_idx]
 
-            if table_obj.col_widths:
-                if len(table_obj.col_widths) != num_cols:
-                    raise ValueError("Number of column widths must match the number of columns.")
-                for i, width in enumerate(table_obj.col_widths):
-                    table.SetColumnWidth(i, width)
+                    cell_center_x = current_x + (cell_width / 2)
+                    cell_center_y = current_y - (row_height / 2)
 
-            table.GenerateLayout()
-            return table
+                    mtext_obj = self.add_mtext(
+                        content=str(cell_text),
+                        insertion_point=APoint(cell_center_x, cell_center_y),
+                        width=cell_width * 0.95,
+                        height=table_obj.text_height,
+                        text_style=table_obj.text_style,
+                        attachment_point=acAttachmentPointMiddleCenter  # Pass alignment directly
+                    )
+                    mtext_obj.AttachmentPoint = acAttachmentPointMiddleCenter
+                    current_x += cell_width
+                current_y -= row_height
 
         except ValueError as ve:
-            raise CADException(f"Invalid input for table creation: {ve}")
+            raise CADException(f"Invalid input for manual table creation: {ve}")
         except Exception as e:
-            raise CADException(f"Error adding table: {e}")
+            raise CADException(f"Error during manual table creation: {e}")
