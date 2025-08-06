@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 import sys
-
+from AutoCAD import __version__
 requirements = ['psutil']
 # Add Windows-specific requirements only when on Windows
 if sys.platform == 'win32':
@@ -8,7 +8,7 @@ if sys.platform == 'win32':
 
 setup(
     name="AutoCAD",
-    version="0.1.9",
+    version=__version__,
     packages=find_packages(),
     install_requires=requirements,
     entry_points={

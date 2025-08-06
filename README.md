@@ -1,6 +1,6 @@
 [![acadlib.png](https://i.postimg.cc/xjBy2P1f/acadlib.png)](https://postimg.cc/5jqF5LzT)
 
-# AutoCAD - python library Latest Version 0.1.9
+# AutoCAD - python library Latest Version 0.1.10
 [![GitHub](https://img.shields.io/badge/GitHub-Jones--peter-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Jones-peter)  [![Instagram](https://img.shields.io/badge/Instagram-jones__peter__-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/jones_peter__/)  [![LinkedIn](https://img.shields.io/badge/LinkedIn-Jones--Peter-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/jones-peter-121157221/)  [![Website](https://img.shields.io/badge/Website-jonespeter.site-0078D4?style=for-the-badge&logo=google-chrome&logoColor=white)](https://jonespeter.site)
 
 [![PyPI version](https://img.shields.io/pypi/v/AutoCAD)](https://pypi.org/project/AutoCAD/)
@@ -133,10 +133,8 @@ cad = AutoCAD()
       insertion_point=APoint(30, 30, 0),
       data=data,
       headers=headers,
-      title="My Custom Table",
       col_widths=[30, 30, 30],
       text_height=2.0,
-      alignment=Alignment.CENTER
   )
   table_obj = cad.add_table(table)
   ```
@@ -320,7 +318,18 @@ cad = AutoCAD()
   ```python
   cad.open_file("path/to/open.dwg")
   ```
-  
+- **send_command(command) & send_commands(command_list[])**: Opens an existing file.
+
+  ```python
+  cad.send_command("LINE 0,0 100,100  ")
+  commands_to_run = [
+      "-LAYER N NewLayer C 1 NewLayer \r",
+      "LAYER S NewLayer \r",
+      "CIRCLE 50,50 25\r"
+  ]
+  cad.send_commands(commands_to_run)
+    ```
+
 ### View Management 🔍
 - **zoom_extents():** Zooms the viewport to display all objects.
 

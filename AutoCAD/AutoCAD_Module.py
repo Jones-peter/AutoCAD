@@ -1,9 +1,8 @@
 import subprocess
-import time
+from enum import Enum
 import psutil
 import pythoncom
 import win32com.client
-from enum import Enum
 
 
 # project by jones peter
@@ -73,7 +72,7 @@ class LineStyle(Enum):
 
 class APoint:
     """Represents a 3D point in AutoCAD."""
-    def __init__(self, x=0, y=0, z=0):
+    def __init__(self, x: float = 0.0, y: float = 0.0, z: float = 0.0):
         """
         Initializes a 3D point.
         Args:
@@ -99,7 +98,7 @@ class APoint:
         Returns:
             tuple: A tuple containing the x and y coordinates.
         """
-        return (self.x, self.y)
+        return self.x, self.y
 
     def __repr__(self):
         return f"APoint({self.x}, {self.y}, {self.z})"
@@ -1356,3 +1355,38 @@ class AutoCAD:
             raise CADException(f"Invalid input for manual table creation: {ve}")
         except Exception as e:
             raise CADException(f"Error during manual table creation: {e}")
+
+    def send_command(self, command_string):
+        """
+        Sends a single command string to the AutoCAD command line.
+        Note: This is an asynchronous operation. The script may continue
+        before the command is fully executed in AutoCAD. For commands that
+        require user input or have long processing times, consider adding delays
+        or using other methods to ensure completion.
+        Args:
+            command_string (str): The command string to send. It should be
+                                  formatted as if typed in the command line.
+                                  Crucially, end the command with a space ' ' or a
+                                  newline '\\r' to simulate pressing Enter.
+                                  Example: "LINE 0,0 100,100  " (two spaces for Enter twice)
+        Raises:
+            CADException: If the command cannot be sent.
+        """
+        try:
+            self.doc.SendCommand(command_string)
+        except Exception as e:
+            raise CADException(f"Error sending command '{command_string}': {e}")
+
+    def send_commands(self, commands):
+        """
+        Sends a sequence of command strings to the AutoCAD command line.
+        Args:
+            commands (list[str]): A list of command strings to send in sequence.
+        Raises:
+            CADException: If any command in the sequence fails.
+        """
+        try:
+            for command in commands:
+                self.send_command(command)
+        except Exception as e:
+            raise CADException(f"Error sending command sequence: {e}")

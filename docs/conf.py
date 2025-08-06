@@ -25,7 +25,7 @@ author = 'Jones-peter'
 
 # The full version, including alpha/beta/rc tags
 # This should match the version in your README/pyproject.toml
-release = '0.1.9'
+release = '0.1.10'
 
 
 # -- General configuration ---------------------------------------------------
