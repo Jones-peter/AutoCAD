@@ -1,9 +1,8 @@
 import subprocess
-from enum import Enum
 import psutil
 import pythoncom
 import win32com.client
-
+from enum import Enum
 
 # project by jones peter
 class Color(Enum):
