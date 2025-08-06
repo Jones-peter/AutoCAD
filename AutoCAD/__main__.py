@@ -1,4 +1,3 @@
-from AutoCAD import __version__
 print("╔────────────────────────────────── WELCOME ──────────────────────────────────╗")
 print("|                   ▁ ▂ ▄ ▅ ▆ ▇ █   AutoCAD    █ ▇ ▆ ▅ ▄ ▂ ▁                  |")
 print("|         AutoCAD is a Python library designed for automating AutoCAD         |")
@@ -8,5 +7,4 @@ print("|                               using Python.                            
 print("|  github: https://github.com/Jones-peter                    By - JonesPeter  |")
 print("|                                                                             |")
 print("╚──────────────────────────Unlimited CAD Automation───────────────────────────╝")
-print(f"Version - {__version__}")
-print("")
+print(f"Version - 0.1.10")
