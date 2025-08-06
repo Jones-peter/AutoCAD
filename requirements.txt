@@ -1,3 +1,5 @@
 sphinx
 sphinx_rtd_theme
 myst-parser
+psutil~=7.0.0
+setuptools~=75.8.2
