@@ -318,7 +318,7 @@ cad = AutoCAD()
   ```python
   cad.open_file("path/to/open.dwg")
   ```
-- **send_command(command) & send_commands(command_list[])**: Opens an existing file.
+- **send_command(command) & send_commands(command_list[])**: Sends commands to current Doc
 
   ```python
   cad.send_command("LINE 0,0 100,100  ")
