@@ -1,8 +1,10 @@
 ---
-name: Bug Report
+name: AutoCAD Python Library Bug Report
 about: Create a report to help us improve the project
 title: "[BUG] "
 labels: bug
+assignees: ''
+
 ---
 
 **Describe the Bug**
@@ -23,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 **Environment:**
  - AutoCAD Version: [e.g., 2025]
  - Python Version: [e.g., 3.11]
- - `AutoCAD-Module` Version: [e.g., 0.2.0]
+ - `AutoCAD` python library Version: [e.g., 0.1.5]
 
 **Additional Context**
 Add any other context about the problem here.
